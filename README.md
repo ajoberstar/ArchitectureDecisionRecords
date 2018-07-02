@@ -21,19 +21,26 @@ Install-Module -Name ArchitectureDecisionRecords
 ### Starting from scratch
 
 ```powershell
-
+Initialize-Adr
 ```
 
 ### Adding a new ADR
 
 ```powershell
+New-Adr -Title 'Use a database'
+New-Adr -Title 'Do not use a database' -Supersede 2
+```
 
+### Generating a TOC
+
+```powershell
+Reset-AdrToc
 ```
 
 ### For more help
 
 ```powershell
-Get-Command -Noun Adr
+Get-Command -Module ArchitectureDecisionRecords
 ```
 
 ```powershell
