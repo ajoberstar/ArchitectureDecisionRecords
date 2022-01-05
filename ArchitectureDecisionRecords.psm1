@@ -273,12 +273,12 @@ Function Add-AdrLink {
   $ToAdr = Get-Adr -Number $ToNumber
 
   if ($FromAdr -and $ToAdr) {
-    $ToFile = Split-Path -Path $ToAdr -Leaf
+    $ToFile = Split-Path -Path $ToAdr.Path -Leaf
 
     $FromAdr.Status = @"
 $($FromAdr.Status)
 
-$FromLink [$($FromAdr.Title)]($ToFile)
+$FromLink [$($ToAdr.Title)]($ToFile)
 "@.Trim()
 
     $Content = ConvertTo-AdrText -InputObject $FromAdr
@@ -385,7 +385,7 @@ Function New-Adr {
 
   $Adr = @{'Number' = $NewNum; 'Title' = $Title; 'Date' = $Date; 'Status' = $Status}
   $Content = ConvertTo-AdrText -InputObject $Adr -Template:$Template
-  New-Item -ItemType Directory -Path $DstDir -Force
+  New-Item -ItemType Directory -Path $DstDir -Force | Out-Null
   Set-Content -Path $DstFile -Value $Content -Encoding UTF8NoBOM
 
   ForEach ($SupersedeNum in $Supersede) {
