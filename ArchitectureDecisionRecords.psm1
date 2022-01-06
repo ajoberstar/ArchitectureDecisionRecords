@@ -261,6 +261,12 @@ The number of the ADR to link to.
 
 .Parameter ToLink
 The text to prefix the reverse link with. If not specified the To ADR will not be modified.
+
+.Example
+Add-AdrLink -FromNumber 1 -ToNumber 2 -FromLink "Linked" -ToLink "Linked"
+
+.Example
+Add-AdrLink -FromNumber 1 -ToNumber 2 -FromLink "Superseded by" -ToLink "Supersedes"
 #>
 Function Add-AdrLink {
   [CmdletBinding()]
