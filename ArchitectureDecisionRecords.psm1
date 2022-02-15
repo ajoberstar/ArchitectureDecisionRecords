@@ -1,3 +1,9 @@
+if ($PSVersionTable.PSCompatibleVersions | Where-Object { $_.Major -eq 6 -and $_.Minor -eq 0 }) {
+  $DefaultEncoding = 'UTF8NoBOM'
+} else {
+  $DefaultEncoding = 'ASCII'
+}
+
 <#
 .Synopsis
 Gets the directory ADRs are stored in for this project.
@@ -20,7 +26,7 @@ Function Get-AdrDir {
   } elseif ($env:ADR_DIR) {
     $env:ADR_DIR
   } elseif (Test-Path '.adr-dir') {
-    Get-Content '.adr-dir'
+    Get-Content -Path '.adr-dir' -Encoding $DefaultEncoding
   } else {
     'doc/adr'
   }
@@ -66,7 +72,7 @@ Function Get-AdrTemplate {
   } else {
     $TemplateFile = Join-Path -Path $MyInvocation.MyCommand.Module.ModuleBase -ChildPath 'template.md'
   }
-  Get-Content -Path $TemplateFile -Encoding UTF8NoBOM
+  Get-Content -Path $TemplateFile -Encoding $DefaultEncoding
 }
 
 <#
@@ -199,7 +205,7 @@ Function Initialize-Adr {
 
   if ($Target) {
     # If target provided, create .adir-dir file to point to it
-    Set-Content -Path '.adr-dir' -Value "$($Target)" -Encoding UTF8NoBOM
+    Set-Content -Path '.adr-dir' -Value "$($Target)" -Encoding $DefaultEncoding
   }
 
   $TemplateFile = Join-Path -Path $MyInvocation.MyCommand.Module.ModuleBase -ChildPath 'init.md'
@@ -233,11 +239,11 @@ Function Get-Adr {
   }
 
   $AdrFiles = Get-ChildItem -Path $Dir -Filter '*.md' |
-    Where-Object { $_.Name -match '(\d+)-.+\.md' } |
-    Where-Object { ($Number -eq 0) -or ($Number -eq [int]$Matches[1]) }
+  Where-Object { $_.Name -match '(\d+)-.+\.md' } |
+  Where-Object { ($Number -eq 0) -or ($Number -eq [int]$Matches[1]) }
 
   $AdrFiles | ForEach-Object {
-    $Result = ConvertFrom-AdrText -InputObject (Get-Content -Path $_.FullName -Encoding UTF8NoBOM -Raw)
+    $Result = ConvertFrom-AdrText -InputObject (Get-Content -Path $_.FullName -Encoding $DefaultEncoding -Raw)
     Add-Member -InputObject $Result -MemberType NoteProperty -Name 'Path' -Value $_.FullName
     $Result
   }
@@ -301,7 +307,7 @@ $FromLink [$($ToAdr.Title)]($ToFile)
 "@.Trim()
 
     $Content = ConvertTo-AdrText -InputObject $FromAdr
-    Set-Content -Path $FromAdr.Path -Value $Content -Encoding UTF8NoBOM
+    Set-Content -Path $FromAdr.Path -Value $Content -Encoding $DefaultEncoding
 
     if ($ToLink) {
       Add-AdrLink -FromNumber $ToNumber -FromLink $ToLink -ToNumber $FromNumber
@@ -337,7 +343,7 @@ Function Remove-AdrStatus {
   if ($Adr) {
     $Adr.Status = ''
     $Content = ConvertTo-AdrText -InputObject $Adr
-    Set-Content -Path $Adr.Path -Value $Content -Encoding UTF8NoBOM
+    Set-Content -Path $Adr.Path -Value $Content -Encoding $DefaultEncoding
   } else {
     Write-Error "No ADR found for number: $Number"
   }
@@ -402,10 +408,10 @@ Function New-Adr {
 
   $Date = Get-Date -Format 'yyyy-MM-dd'
 
-  $Adr = @{'Number' = $NewNum; 'Title' = $Title; 'Date' = $Date; 'Status' = $Status}
+  $Adr = @{'Number' = $NewNum; 'Title' = $Title; 'Date' = $Date; 'Status' = $Status }
   $Content = ConvertTo-AdrText -InputObject $Adr -Template:$Template
   New-Item -ItemType Directory -Path $DstDir -Force | Out-Null
-  Set-Content -Path $DstFile -Value $Content -Encoding UTF8NoBOM
+  Set-Content -Path $DstFile -Value $Content -Encoding $DefaultEncoding
 
   ForEach ($SupersedeNum in $Supersede) {
     Remove-AdrStatus -Number $SupersedeNum
@@ -441,5 +447,5 @@ $Links
 "@
 
   $Path = Join-Path -Path (Get-AdrDir) -ChildPath 'README.md'
-  Set-Content -Path $Path -Value $Content -Encoding UTF8NoBOM
+  Set-Content -Path $Path -Value $Content -Encoding $DefaultEncoding
 }
